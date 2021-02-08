@@ -1,0 +1,41 @@
+{
+  "0001A": {
+    "family_id": "0001",
+    "identifier": "A",
+    "name": "Testing Person 1",
+    "class_id": 1,
+    "attendance": [
+      "3/1/2021",
+      "17/1/2020"
+    ]
+  },
+  "0001B": {
+    "family_id": "0001",
+    "identifier": "B",
+    "name": "Testing Person 2",
+    "class_id": 1,
+    "attendance": [
+      "10/1/2021",
+      "24/1/2020"
+    ]
+  },
+  "0002A": {
+    "family_id": "0002",
+    "identifier": "A",
+    "name": "Testing Person 3",
+    "class_id": 6,
+    "attendance": [
+      "3/1/2021",
+      "10/1/2021",
+      "17/1/2021",
+      "24/1/2020"
+    ]
+  },
+  "0002B": {
+    "family_id": "0002",
+    "identifier": "B",
+    "name": "Testing Person 4",
+    "class_id": 1,
+    "attendance": []
+  }
+}

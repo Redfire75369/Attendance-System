@@ -21,7 +21,7 @@ async function studentById(student_id: string): Promise<Student | null> {
 	}
 };
 
-async function studentsAllByClassId(class_id: number): Promise<Student[] | null> {
+async function studentsAllByClassId(class_id: number): Promise<Student[]> {
 	try {
 		let {data, error} = await supabase
 			.from<Student>("students")
@@ -36,11 +36,11 @@ async function studentsAllByClassId(class_id: number): Promise<Student[] | null>
 		return data;
 	} catch (error) {
 		console.warn(error);
-		return null;
+		return [];
 	}
 };
 
-async function studentsAll(): Promise<Student[] | null> {
+async function studentsAll(): Promise<Student[]> {
 	try {
 		let {data, error} = await supabase
 			.from<Student>("students")
@@ -54,15 +54,12 @@ async function studentsAll(): Promise<Student[] | null> {
 		return data;
 	} catch (error) {
 		console.warn(error);
-		return null;
+		return [];
 	}
 }
 
 async function studentIdsAll(): Promise<string[]> {
 	let data = await studentsAll();
-	if (data == null) {
-		return [];
-	}
 
 	return data.map(({student_id}) => student_id);
 }

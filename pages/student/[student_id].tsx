@@ -1,4 +1,3 @@
-import {isValid, startOfDay, startOfToday, subDays, subWeeks} from "date-fns";
 import {GetServerSideProps, InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
 import React, {ChangeEvent, useRef, useState} from "react";
@@ -9,11 +8,11 @@ import Layout from "../../components/Layout";
 import DataLabel from "../../components/DataLabel";
 
 import supabase from "../../src/server";
-import {recordsAllByStudent} from "../../src/database/read/records";
+import {getStudentAttendanceOnDates} from "../../src/attendance";
 import {studentById} from "../../src/database/read/students";
 import {classNameById} from "../../src/database/read/classes";
-import {getDaysInRange} from "../../src/date_range";
 import {getISODate} from "../../src/date";
+import {getDaysInRange, parseDateRangeInQuery} from "../../src/date_range";
 
 export const getServerSideProps: GetServerSideProps = async function({params, query, req}) {
 	const { user } = await supabase.auth.api.getUserByCookie(req);
@@ -39,22 +38,12 @@ export const getServerSideProps: GetServerSideProps = async function({params, qu
 		}
 	}
 
-	const records = await recordsAllByStudent(id) ?? [];
 	const className = await classNameById(student.class_id);
 
-	const start = isValid(new Date(query.start as string)) ? startOfDay(new Date(query.start as string)) : subWeeks(startOfToday(), 4);
-	const end = isValid(new Date(query.end as string)) ? startOfDay(new Date(query.end as string)) : startOfToday();
+	const [start, end] = parseDateRangeInQuery(query);
 	const dates = getDaysInRange(7, [start, end]);
 
-	const attendance: Attendance = {};
-	const datesWithAttendance = records.map(function({date}) {
-		return (startOfDay(new Date(date))).toString();
-	});
-
-	dates.forEach(function(date) {
-		let index = datesWithAttendance.indexOf(subDays(date, 1).toString());
-		attendance[date.toString()] = index === -1 ? false : records[index].attendance;
-	});
+	const attendance = await getStudentAttendanceOnDates(id, dates);
 
 	return {
 		props: {
@@ -65,7 +54,7 @@ export const getServerSideProps: GetServerSideProps = async function({params, qu
 	}
 }
 
-function StudentAttendancePage (
+function StudentAttendancePage(
 	{attendance, className, student}: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
 	const dates = Object.keys(attendance).map(d => new Date(d));
@@ -73,12 +62,12 @@ function StudentAttendancePage (
 		return prev + (attendance[date.toString()] ? 1 : 0);
 	}, 0);
 
-	let router = useRouter();
-	let [data, setData] = useState<Attendance>(attendance);
+	const router = useRouter();
+	const [data, setData] = useState<Attendance>(attendance);
 
-	let modifications = useRef<Attendance>({});
-	let startRef = useRef<HTMLInputElement>(null);
-	let endRef = useRef<HTMLInputElement>(null);
+	const modifications = useRef<Attendance>({});
+	const startRef = useRef<HTMLInputElement>(null);
+	const endRef = useRef<HTMLInputElement>(null);
 
 	async function updateDates() {
 		const start = startRef.current?.value;

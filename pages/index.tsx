@@ -1,13 +1,19 @@
 import {Session, User} from "@supabase/supabase-js";
-import React, { useState, useEffect } from "react";
+import {useRouter} from "next/router";
+import React, {useState, useEffect, useRef} from "react";
 
 import Layout from "../components/Layout";
 
 import anonSupabase from "../src/client";
 
 function IndexPage() {
+	const router = useRouter();
+
 	const [user, setUser] = useState<User | null>(null);
 	const setSession = useState<Session | null>(null)[1];
+
+	const studentRef = useRef<HTMLInputElement>(null);
+	const classRef = useRef<HTMLInputElement>(null);
 
 	useEffect(function() {
 		const authSession = anonSupabase.auth.session();
@@ -53,6 +59,26 @@ function IndexPage() {
 		setUser(null);
 	}
 
+	async function goToStudent() {
+		const id = studentRef.current?.value;
+		if (id) {
+			await router.push(`/student/${id}`);
+		}
+	}
+	async function browseStudents() {
+		await router.push(`/students?page=1`);
+	}
+
+	async function goToClass() {
+		const id = classRef.current?.value;
+		if (id) {
+			await router.push(`/class/${id}`);
+		}
+	}
+	async function browseClasses() {
+		await router.push(`/classes?page=1`);
+	}
+
 	return !user ? (
 		<Layout title="Sign In">
 			<button onClick={signIn}>
@@ -69,6 +95,16 @@ function IndexPage() {
 					<button onClick={signOut}>
 						Sign Out
 					</button>
+				</div>
+				<div>
+					<input type="text" ref={studentRef} placeholder="Student ID"/>
+					<button onClick={goToStudent}>Go to Student</button>
+					<button onClick={browseStudents}>Browse Students</button>
+				</div>
+				<div>
+					<input type="text" ref={classRef} placeholder="Class ID"/>
+					<button onClick={goToClass}>Go to Class</button>
+					<button onClick={browseClasses}>Browse Classes</button>
 				</div>
 			</>
 		</Layout>

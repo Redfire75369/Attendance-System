@@ -46,7 +46,10 @@ COMMENT ON COLUMN attendance_record.student_id is 'Student ID';
 COMMENT ON COLUMN attendance_record.attendance is 'Attendance Status';
 
 
-INSERT INTO classes (class_id, class_name, level_id)
-    VALUES (0, 'None', 0);
-INSERT INTO students (student_id, student_name, class_id)
-    VALUES ('0001A', 'Testing', 0)
+INSERT INTO classes (class_id, class_name, level_id) VALUES
+    (0, 'Primary 1', 0),
+    (1, 'Primary 2', 0);
+INSERT INTO students (student_id, student_name, class_id) VALUES
+    ('0001A', 'Angel', 0),
+    ('0001B', 'Bob', 1),
+    ('0002A', 'Charlie', 0);

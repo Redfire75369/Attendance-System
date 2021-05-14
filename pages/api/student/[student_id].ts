@@ -1,4 +1,5 @@
 import {NextApiRequest, NextApiResponse} from "next";
+
 import {updateStudentOnDates} from "../../../src/database/update/attendance";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -11,6 +12,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
 		let dates: Date[] = [];
 		let attendances: boolean[] = [];
+
 		let keys = Object.keys(req.body);
 
 		for (const date of keys) {
@@ -18,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 			attendances.push(req.body[date]);
 		}
 
-		await updateStudentOnDates(req.query.student_id as string, dates, attendances)
+		await updateStudentOnDates(req.query.student_id as string, dates, attendances);
 
 		res.statusCode = 200;
 		res.setHeader("Content-Type", "application/json");

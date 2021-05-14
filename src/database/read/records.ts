@@ -41,7 +41,7 @@ async function recordId(date: Date, student_id: string): Promise<number | null> 
 	}
 }
 
-async function recordsAllByDate(date: number): Promise<Record[] | null> {
+async function recordsAllByDate(date: number): Promise<Record[]> {
 	try {
 		let {data, error} = await supabase
 			.from<Record>("attendance_record")
@@ -56,11 +56,11 @@ async function recordsAllByDate(date: number): Promise<Record[] | null> {
 		return data;
 	} catch (error) {
 		console.warn(error);
-		return null;
+		return [];
 	}
 }
 
-async function recordsAllByStudent(student_id: string): Promise<Record[] | null> {
+async function recordsAllByStudent(student_id: string): Promise<Record[]> {
 	try {
 		let {data, error} = await supabase
 			.from<Record>("attendance_record")
@@ -75,7 +75,7 @@ async function recordsAllByStudent(student_id: string): Promise<Record[] | null>
 		return data;
 	} catch (error) {
 		console.warn(error);
-		return null;
+		return [];
 	}
 }
 

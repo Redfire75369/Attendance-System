@@ -1,17 +1,23 @@
-module.exports = {
+const nextRuntimeDotenv = require('next-runtime-dotenv')
+
+const withConfig = nextRuntimeDotenv({
+	path: '.env',
+	public: [
+		'SUPABASE_URL',
+		'SUPABASE_ANON_KEY'
+	],
+	server: [
+		'SUPABASE_ADMIN_KEY'
+	]
+})
+
+module.exports = withConfig({
+	future: {
+		webpack5: true
+	},
 	webpack: (config, options) => {
 		const {buildId, dev, isServer, defaultLoaders, webpack} = options;
 
-		if (!isServer) {
-			config.node = {
-				fs: 'empty'
-			}
-		}
-
-		config.externals = {
-			sqlite3: "sqlite3"
-		}
-
 		return config;
 	}
-}
+});

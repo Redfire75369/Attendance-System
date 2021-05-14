@@ -1,6 +1,6 @@
 {
   "name": "attendance-system",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "license": "MPL-2.0",
   "scripts": {
     "dev": "next",
@@ -9,18 +9,19 @@
     "type-check": "tsc"
   },
   "dependencies": {
-    "next": "10.0.5",
-    "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "sqlite": "4.0.19",
-    "sqlite3": "5.0.1",
-    "sqlite3-offline": "^4.3.1"
+    "@supabase/supabase-js": "1.11.12",
+    "date-fns": "2.21.3",
+    "dotenv": "8.6.0",
+    "next": "10.2.0",
+    "next-runtime-dotenv": "1.4.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "tachyons": "4.12.0"
   },
   "devDependencies": {
-    "@types/node": "12.19.15",
-    "@types/react": "16.14.2",
-    "@types/react-dom": "16.9.10",
-    "@types/sqlite3": "3.1.7",
-    "typescript": "4.0.5"
+    "@types/node": "15.0.3",
+    "@types/react": "17.0.5",
+    "@types/react-dom": "17.0.5",
+    "typescript": "4.2.4"
   }
 }

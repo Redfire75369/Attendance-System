@@ -1,12 +1,12 @@
-import React, {ReactNode} from 'react'
-import Head from 'next/head'
+import Head from "next/head";
+import React, {ReactNode} from "react";
 
 type Props = {
 	children?: ReactNode
 	title?: string
 }
 
-function Layout({children, title = "Default Title"}: Props) {
+function Layout({children, title = "Attendance System"}: Props) {
 	return (
 		<div>
 			<Head>

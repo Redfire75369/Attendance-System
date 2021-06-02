@@ -4,6 +4,9 @@ import {updateStudentOnDates} from "../../../src/database/update/attendance";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (!req.query.student_id) {
+		res.statusCode = 400;
+		res.end();
+
 		return;
 	}
 
@@ -23,7 +26,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 		await updateStudentOnDates(req.query.student_id as string, dates, attendances);
 
 		res.statusCode = 200;
-		res.setHeader("Content-Type", "application/json");
+		res.end();
+	} else {
+		res.statusCode = 405;
 		res.end();
 	}
 }

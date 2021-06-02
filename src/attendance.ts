@@ -1,7 +1,8 @@
 import {startOfDay, subDays} from "date-fns";
 
-import {recordsAllByStudent} from "./database/read/records";
 import {Attendance} from "../interfaces";
+
+import {recordsAllByStudent} from "./database/read/records";
 
 async function getStudentAttendanceOnDates(student_id: string, dates: Date[]) {
 	const records = await recordsAllByStudent(student_id);

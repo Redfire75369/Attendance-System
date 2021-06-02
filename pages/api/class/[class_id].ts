@@ -4,6 +4,9 @@ import {updateStudentOnDates} from "../../../src/database/update/attendance";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (!req.query.class_id || isNaN(parseInt(req.query.class_id as string))) {
+		res.statusCode = 400;
+		res.end();
+
 		return;
 	}
 
@@ -27,7 +30,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 		}
 
 		res.statusCode = 200;
-		res.setHeader("Content-Type", "application/json");
+		res.end();
+	} else {
+		res.statusCode = 405;
 		res.end();
 	}
 }

@@ -1,3 +1,4 @@
+import {Button, HStack, Table, Tbody, Td, Th, Thead, Tr, VStack} from "@chakra-ui/react";
 import {GetServerSideProps, InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
 
@@ -5,22 +6,18 @@ import {Student} from "../interfaces";
 
 import Layout from "../components/Layout";
 
-import supabase from "../src/server";
+import {redirectToHome} from "../src/constants";
 import {classNameById} from "../src/database/read/classes";
 import {studentsAll} from "../src/database/read/students";
+import supabase from "../src/server";
 
 const PAGE_LENGTH = 50;
 
 export const getServerSideProps: GetServerSideProps = async function({query, req}) {
-	const { user } = await supabase.auth.api.getUserByCookie(req);
+	const {user} = await supabase.auth.api.getUserByCookie(req);
 
 	if (!user) {
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		}
+		return redirectToHome;
 	}
 
 	const page = !isNaN(parseInt(query.page as string)) ? parseInt(query.page as string) : 1
@@ -58,42 +55,45 @@ function StudentsPage(
 	}
 
 	return (
-		<Layout>
-			<div>
-				{page != 1 ? <button onClick={prevPage}>Previous Page</button> : <></>}
-				{page != maxPages ? <button onClick={nextPage}>Next Page</button> : <></>}
-			</div>
-			<table>
-				<tbody>
-					<tr>
-						<td>Student ID</td>
-						<td>Name</td>
-						<td>Class</td>
-					</tr>
-					{(students as Student[]).map(function(student, index) {
-						async function goTo() {
-							await router.push(`/student/${student.student_id}`);
-						}
+		<Layout title="Attendance System (Students)">
+			<VStack justify="start">
+				<HStack justify="start">
+					{page != 1 ? <Button onClick={prevPage} colorScheme="cyan" size="sm">Previous Page</Button> : <></>}
+					{page != maxPages ? <Button onClick={nextPage} colorScheme="cyan" size="sm">Next Page</Button> : <></>}
+				</HStack>
+				<HStack justify="start">
+					<Table colorScheme="blue" size="sm">
+						<Thead>
+							<Tr>
+								<Th>Student ID</Th>
+								<Th>Name</Th>
+								<Th>Class</Th>
+								<Th/>
+							</Tr>
+						</Thead>
+						<Tbody>
+							{(students as Student[]).map(function(student, index) {
+								async function goTo() {
+									await router.push(`/student/${student.student_id}`);
+								}
 
-						return (
-							<tr key={student.student_id}>
-								<td>{student.student_id}</td>
-								<td>{student.student_name}</td>
-								<td>{classNames[index]}</td>
-								<td>
-									<button onClick={goTo}>
-										Go to Student
-									</button>
-								</td>
-							</tr>
-						);
-					})}
-				</tbody>
-			</table>
-			<div>
-				{page != 1 ? <button onClick={prevPage}>Previous Page</button> : <></>}
-				{page != maxPages ? <button onClick={nextPage}>Next Page</button> : <></>}
-			</div>
+								return (
+									<Tr key={student.student_id}>
+										<Td>{student.student_id}</Td>
+										<Td>{student.student_name}</Td>
+										<Td>{classNames[index]}</Td>
+										<Td><Button onClick={goTo} colorScheme="blue" size="sm">Go to Student</Button></Td>
+									</Tr>
+								);
+							})}
+						</Tbody>
+					</Table>
+				</HStack>
+				<HStack justify="start">
+					{page != 1 ? <Button onClick={prevPage} colorScheme="cyan" size="sm">Previous Page</Button> : <></>}
+					{page != maxPages ? <Button onClick={nextPage} colorScheme="cyan" size="sm">Next Page</Button> : <></>}
+				</HStack>
+			</VStack>
 		</Layout>
 	);
 }

@@ -7,12 +7,12 @@ import {Attendance} from "../../interfaces";
 import DataLabel from "../../components/DataLabel";
 import Layout from "../../components/Layout";
 
-import supabase from "../../src/server";
 import {getStudentAttendanceOnDates} from "../../src/attendance";
 import {classById} from "../../src/database/read/classes";
 import {studentsAllByClassId} from "../../src/database/read/students";
 import {getISODate} from "../../src/date";
 import {getDaysInRange, parseDateRangeInQuery} from "../../src/date_range";
+import supabase from "../../src/server";
 
 export const getServerSideProps: GetServerSideProps = async function({params, query, req}) {
 	const {user} = await supabase.auth.api.getUserByCookie(req);

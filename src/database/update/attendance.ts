@@ -1,6 +1,6 @@
-import supabase from "../../server";
 import {studentsAllByClassId} from "../read/students";
 import {recordId} from "../read/records";
+import supabase from "../../server";
 
 async function updateStudentOnDate(student_id: string, date: Date, attendance: boolean): Promise<boolean> {
 	try {

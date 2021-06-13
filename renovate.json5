@@ -1,0 +1,79 @@
+{
+  "enabled": true,
+
+  "assignAutomerge": false,
+  "assigneesFromCodeOwners": false,
+  "automerge": false,
+  "branchConcurrentLimit": 3,
+  "configWarningReuseIssue": true,
+  "dependencyDashboard": false,
+  "ignoreDeprecated": true,
+  "ignoreScripts": true,
+  "ignoreUnstable": true,
+  "includeForks": false,
+  "prHourlyLimit": 1,
+  "prConcurrentLimit": 3,
+  "prCreation": "immediate",
+  "rebaseWhen": "auto",
+  "recreateClosed": false,
+  "respectLatest": true,
+  "separateMajorMinor": true,
+  "separateMultipleMajor": false,
+  "separateMinorPatch": false,
+  "unicodeEmoji": true,
+  "updateLockFiles": true,
+  "updateNotScheduled": true,
+
+  "branchPrefix": "renovate/",
+  "labels": [
+    "Type: RenovateBot"
+  ],
+  "baseBranches": [
+    "master"
+  ],
+
+  "schedule": [
+    "every weekend"
+  ],
+  "timezone": "Asia/Singapore",
+
+  "enabledManagers": [
+    "github-actions",
+    "npm"
+  ],
+  "js": {},
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+
+  "ignorePaths": [
+    "node_modules/**"
+  ],
+
+  "packageRules": [
+	{
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
+      "group": true,
+      "groupName": "Dependencies",
+      "groupSlug": "dependencies"
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "group": true,
+      "groupName": "Development Dependencies",
+      "groupSlug": "dev-dependencies"
+    }
+  ]
+}

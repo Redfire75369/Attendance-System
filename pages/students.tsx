@@ -1,4 +1,4 @@
-import {Button, HStack, Input, Table, Tbody, Td, Th, Thead, Tr, VStack} from "@chakra-ui/react";
+import {Button, Center, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
 import {GetServerSideProps, InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
 import {useState} from "react";
@@ -75,7 +75,19 @@ function StudentsPage(
 		await router.push(`/students?page=1&q=${query}`);
 	}
 
-	return (
+	return students.length === 0 ? (
+		<Layout title="Attendance System (Students)">
+			<VStack justify="start">
+				<HStack>
+					<Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" colorScheme="blue" size="sm"/>
+					<Button onClick={handleSearch} colorScheme="blue">Search</Button>
+				</HStack>
+				<HStack>
+					<Text><Center>No Results</Center></Text>
+				</HStack>
+			</VStack>
+		</Layout>
+	) : (
 		<Layout title="Attendance System (Students)">
 			<VStack justify="start">
 				<HStack justify="start">

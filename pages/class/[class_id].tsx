@@ -70,9 +70,10 @@ function ClassAttendancePage(
 	async function updateAttendance() {
 		await fetch(`/api/class/${class_.class_id}`, {
 			method: "PUT",
-			headers: {
+			headers: new Headers({
 				"Content-Type": "application/json"
-			},
+			}),
+			credentials: "same-origin",
 			body: JSON.stringify(modifications.current)
 		});
 		window.location.reload();

@@ -69,11 +69,12 @@ function StudentAttendancePage(
 	}
 
 	async function updateAttendance() {
-		await fetch(`/api/student/${student.student_id}`, {
+		await fetch(`/api/student/${student.student_id}/attendance`, {
 			method: "PUT",
-			headers: {
+			headers: new Headers({
 				"Content-Type": "application/json"
-			},
+			}),
+			credentials: "same-origin",
 			body: JSON.stringify(modifications.current)
 		});
 		window.location.reload();

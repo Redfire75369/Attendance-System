@@ -19,6 +19,9 @@ function IndexPage() {
 	const [studentId, setStudentId] = useState("");
 	const [classId, setClassId] = useState("");
 
+	const [invalidStudentId, setInvalidStudentId] = useState(false);
+	const [invalidClassId, setInvalidClassId] = useState(false);
+
 	useEffect(function () {
 		const authSession = anonSupabase.auth.session();
 		setSession(authSession);
@@ -39,7 +42,7 @@ function IndexPage() {
 				})
 			});
 
-			setSession(authSession)
+			setSession(authSession);
 			setUser(authSession?.user ?? null);
 		});
 
@@ -62,20 +65,35 @@ function IndexPage() {
 
 	async function goToStudent() {
 		if (studentId !== "") {
-			await router.push(`/student/${studentId}`);
+			const res = await fetch(`/api/student/${studentId}`, {
+				method: "GET",
+				headers: new Headers({
+					"Content-Type": "application/json"
+				}),
+				credentials: "same-origin"
+			});
+			if (res.status === 200) {
+				setInvalidStudentId(false);
+				await router.push(`/student/${studentId}`);
+			} else {
+				setInvalidStudentId(true);
+			}
 		}
-	}
-	async function browseStudents() {
-		await router.push(`/students?page=1`);
 	}
 
 	async function goToClass() {
 		if (classId !== "") {
-			await router.push(`/class/${classId}`);
+			const res = await fetch(`/api/class/${classId}`, {
+				method: "GET",
+				credentials: "same-origin"
+			});
+			if (res.status === 200) {
+				setInvalidClassId(false);
+				await router.push(`/class/${classId}`);
+			} else {
+				setInvalidClassId(true);
+			}
 		}
-	}
-	async function browseClasses() {
-		await router.push(`/classes?page=1`);
 	}
 
 	return !user ? (
@@ -93,18 +111,26 @@ function IndexPage() {
 					<Text>{user.email?.split("@")[0]}</Text>
 					<Button onClick={signOut} colorScheme="blue">Sign Out</Button>
 				</HStack>
-				<VStack justify="start" spacing={3}>
-					<HStack spacing={3}>
+				<VStack w="100vw" justify="start" spacing={3}>
+					<HStack spacing={3} isInline>
 						<Text>Student: </Text>
-						<Input value={studentId} onChange={(event) => setStudentId(event.target.value)} resize="none" placeholder="Student ID" colorScheme="blue" size="sm"/>
+						{invalidStudentId ? (
+							<Input value={studentId} onChange={(event) => setStudentId(event.target.value)} resize="none" placeholder="Student ID" colorScheme="blue" size="sm" borderColor="red"/>
+						) : (
+							<Input value={studentId} onChange={(event) => setStudentId(event.target.value)} resize="none" placeholder="Student ID" colorScheme="blue" size="sm"/>
+						)}
 						<Button onClick={goToStudent} colorScheme="blue">Go to</Button>
-						<Button onClick={browseStudents} colorScheme="blue">Browse</Button>
+						<Button onClick={async () => await router.push("/students?page=1")} colorScheme="blue">Browse</Button>
 					</HStack>
-					<HStack spacing={3}>
+					<HStack spacing={3} isInline>
 						<Text>Class: </Text>
-						<Input value={classId} onChange={(event) => setClassId(event.target.value)} resize="none" placeholder="Class ID" colorScheme="blue" size="sm"/>
+						{invalidClassId ? (
+							<Input value={classId} onChange={(event) => setClassId(event.target.value)} resize="none" placeholder="Class ID" colorScheme="blue" size="sm" borderColor="red"/>
+						) : (
+							<Input value={classId} onChange={(event) => setClassId(event.target.value)} resize="none" placeholder="Class ID" colorScheme="blue" size="sm"/>
+						)}
 						<Button onClick={goToClass} colorScheme="blue">Go to</Button>
-						<Button onClick={browseClasses} colorScheme="blue">Browse</Button>
+						<Button onClick={async () => await router.push("/classes?page=1")} colorScheme="blue">Browse</Button>
 					</HStack>
 				</VStack>
 			</VStack>

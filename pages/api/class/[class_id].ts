@@ -1,38 +1,22 @@
-import {NextApiRequest, NextApiResponse} from "next";
+import {NextApiResponse} from "next";
 
-import {updateStudentOnDates} from "../../../src/database/update/attendance";
+import {NextClassApiRequest} from "../../../interfaces";
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-	if (req.method !== "PUT") {
-		res.setHeader("Allow", "PUT");
+import {classById} from "../../../src/database/read/classes";
+
+async function handler(req: NextClassApiRequest, res: NextApiResponse) {
+	if (req.method !== "GET") {
+		res.setHeader("Allow", "GET");
 		res.status(405).end();
-		return;
-	}
-
-	if (!req.query.class_id || isNaN(parseInt(req.query.class_id as string))) {
-		res.status(400).end();
 		return;
 	}
 
 	// let user = supabase.auth.api.getUserByCookie(req);
 
-	const students = Object.keys(req.body);
+	const class_ = await classById(parseInt(req.query.class_id));
 
-	for (const student of students) {
-		const dates: Date[] = [];
-		const attendances: boolean[] = [];
-
-		const keys = Object.keys(req.body[student]);
-
-		for (const date of keys) {
-			dates.push(new Date(date));
-			attendances.push(req.body[student][date]);
-		}
-
-		await updateStudentOnDates(student, dates, attendances);
-	}
-
-	res.status(200).end();
+	res.setHeader("Content-Type", "application/json");
+	res.status(class_ !== null ? 200 : 404).json({class: class_});
 }
 
 export default handler;

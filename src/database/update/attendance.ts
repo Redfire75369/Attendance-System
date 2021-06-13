@@ -1,23 +1,22 @@
 import {studentsAllByClassId} from "../read/students";
 import {recordId} from "../read/records";
 import supabase from "../../server";
+import {format} from "date-fns";
 
 async function updateStudentOnDate(student_id: string, date: Date, attendance: boolean): Promise<boolean> {
 	try {
 		let record_id = await recordId(date, student_id);
 
-		const {data, error} = typeof record_id === "number" ? await supabase
-			.from("attendance_record")
+		const {data, error} = typeof record_id === "number" ? await supabase.from("attendance_record")
 			.update({
 				record_id,
-				date,
+				date: format(date, "yyyy-MM-dd"),
 				student_id,
 				attendance
 			})
-				.eq("record_id", record_id) : await supabase
-			.from("attendance_record")
+			.eq("record_id", record_id) : await supabase.from("attendance_record")
 			.insert({
-				date: date,
+				date: format(date, "yyyy-MM-dd"),
 				student_id,
 				attendance
 			});
@@ -25,11 +24,10 @@ async function updateStudentOnDate(student_id: string, date: Date, attendance: b
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return true;
 	} catch (error) {
 		console.warn(error);
-		return false
+		return false;
 	}
 }
 

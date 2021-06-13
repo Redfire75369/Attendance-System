@@ -3,38 +3,36 @@ import {NextApiRequest, NextApiResponse} from "next";
 import {updateStudentOnDates} from "../../../src/database/update/attendance";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-	if (!req.query.class_id || isNaN(parseInt(req.query.class_id as string))) {
-		res.statusCode = 400;
-		res.end();
-
+	if (req.method !== "PUT") {
+		res.setHeader("Allow", "PUT");
+		res.status(405).end();
 		return;
 	}
 
-	if (req.method === "PUT") {
-		// let user = supabase.auth.api.getUserByCookie(req);
+	if (!req.query.class_id || isNaN(parseInt(req.query.class_id as string))) {
+		res.status(400).end();
+		return;
+	}
 
-		const students = Object.keys(req.body);
+	// let user = supabase.auth.api.getUserByCookie(req);
 
-		for (const student of students) {
-			const dates: Date[] = [];
-			const attendances: boolean[] = [];
+	const students = Object.keys(req.body);
 
-			const keys = Object.keys(req.body[student]);
+	for (const student of students) {
+		const dates: Date[] = [];
+		const attendances: boolean[] = [];
 
-			for (const date of keys) {
-				dates.push(new Date(date));
-				attendances.push(req.body[student][date]);
-			}
+		const keys = Object.keys(req.body[student]);
 
-			await updateStudentOnDates(student, dates, attendances);
+		for (const date of keys) {
+			dates.push(new Date(date));
+			attendances.push(req.body[student][date]);
 		}
 
-		res.statusCode = 200;
-		res.end();
-	} else {
-		res.statusCode = 405;
-		res.end();
+		await updateStudentOnDates(student, dates, attendances);
 	}
+
+	res.status(200).end();
 }
 
 export default handler;

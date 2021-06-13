@@ -12,21 +12,21 @@
     "@chakra-ui/react": "1.6.3",
     "@emotion/react": "11.4.0",
     "@emotion/styled": "11.3.0",
-    "@supabase/supabase-js": "1.11.12",
-    "date-fns": "2.21.3",
+    "@supabase/supabase-js": "1.14.0",
+    "date-fns": "2.22.1",
     "dotenv": "8.6.0",
     "framer-motion": "4.1.17",
-    "next": "10.2.0",
+    "next": "10.2.3",
     "next-runtime-dotenv": "1.4.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "tachyons": "4.12.0"
   },
   "devDependencies": {
-    "@types/node": "15.0.3",
-    "@types/react": "17.0.5",
-    "@types/react-dom": "17.0.5",
-    "sass": "1.32.13",
-    "typescript": "4.2.4"
+    "@types/node": "15.12.2",
+    "@types/react": "17.0.11",
+    "@types/react-dom": "17.0.7",
+    "sass": "1.34.1",
+    "typescript": "4.3.2"
   }
 }

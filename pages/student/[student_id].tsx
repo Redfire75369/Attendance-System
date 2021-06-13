@@ -1,3 +1,4 @@
+import {Button, Center, Checkbox, HStack, Input, Table, Tbody, Td, Text, Thead, Tr, VStack} from "@chakra-ui/react";
 import {GetServerSideProps, InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
 import React, {ChangeEvent, useRef, useState} from "react";
@@ -5,44 +6,34 @@ import React, {ChangeEvent, useRef, useState} from "react";
 import {Attendance} from "../../interfaces";
 
 import Layout from "../../components/Layout";
-import DataLabel from "../../components/DataLabel";
+import DatesHeader from "../../components/DatesHeader";
 
 import {getStudentAttendanceOnDates} from "../../src/attendance";
+import {redirectToHome} from "../../src/constants";
 import {studentById} from "../../src/database/read/students";
 import {classNameById} from "../../src/database/read/classes";
 import {getISODate} from "../../src/date";
 import {getDaysInRange, parseDateRangeInQuery} from "../../src/date_range";
 import supabase from "../../src/server";
+import {assembleRedirect} from "../../src/utils";
 
 export const getServerSideProps: GetServerSideProps = async function({params, query, req}) {
 	const { user } = await supabase.auth.api.getUserByCookie(req);
 
 	if (!user) {
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		}
+		return redirectToHome;
 	}
 
 	const id = params?.student_id as string;
 	const student = await studentById(id);
 
 	if (!student) {
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		}
+		return assembleRedirect("/students");
 	}
 
 	const className = await classNameById(student.class_id);
 
-	const [start, end] = parseDateRangeInQuery(query);
-	const dates = getDaysInRange(7, [start, end]);
-
+	const dates = getDaysInRange(7, parseDateRangeInQuery(query));
 	const attendance = await getStudentAttendanceOnDates(id, dates);
 
 	return {
@@ -51,7 +42,7 @@ export const getServerSideProps: GetServerSideProps = async function({params, qu
 			className,
 			student
 		}
-	}
+	};
 }
 
 function StudentAttendancePage(
@@ -89,55 +80,57 @@ function StudentAttendancePage(
 	}
 
 	return (
-		<Layout title="Student Attendance">
-			<div>
-				<div>
-					<label htmlFor="start">From: </label>
-					<input type="date" name="start" id="start-date" defaultValue={getISODate(dates[0])} ref={startRef}/>
-				</div>
-				<div>
-					<label htmlFor="end">To: </label>
-					<input type="date" name="end" id="end-date" defaultValue={getISODate(dates[dates.length - 1])} ref={endRef}/>
-				</div>
-				<div>
-					<button onClick={updateDates}>Dates</button>
-				</div>
-			</div>
-			<div>
-				Total Attendance: {dates.length} ({present} Present)
-			</div>
-			<table>
-				<tbody>
-					<DataLabel dates={dates}/>
-					<tr>
-						<td>{student.student_id}</td>
-						<td>{student.student_name}</td>
-						<td>{className}</td>
-						{dates.map((date) => {
-							function handleChange(event: ChangeEvent<HTMLInputElement>) {
-								modifications.current[date.toString()] = event.target.checked;
-								setData({
-									...data,
-									[date.toString()]: event.target.checked
-								});
-							}
+		<Layout title={`Student Attendance (${student.student_id})`}>
+			<VStack align="center" justify="start">
+				<HStack justify="center" spacing={3}>
+					<Text>From:</Text>
+					<Input type="date" ref={startRef} defaultValue={getISODate(dates[0])} size="sm"/>
+					<Text>To:</Text>
+					<Input type="date" ref={endRef} defaultValue={getISODate(dates[dates.length - 1])} size="sm"/>
+					<Button onClick={updateDates} colorScheme="cyan">Dates</Button>
+				</HStack>
+				<Text>
+					Student ID: {student.student_id}<br/>
+					Name: {student.student_name}<br/>
+					Class: {className}<br/>
+					Total Attendance: {dates.length} ({present} Present)
+				</Text>
+				<Table size="sm">
+					<Thead>
+						<Tr>
+							<DatesHeader dates={dates}/>
+						</Tr>
+					</Thead>
+					<Tbody>
+						<Tr>
+							{dates.map((date) => {
+								function handleChange(event: ChangeEvent<HTMLInputElement>) {
+									modifications.current[date.toString()] = event.target.checked;
+									setData({
+										...data,
+										[date.toString()]: event.target.checked
+									});
+								}
 
-							return data[date.toString()] ? (
-								<td key={date.toString()}>
-									<input type="checkbox" onChange={handleChange} autoComplete="off" checked/>
-								</td>
-							) : (
-								<td key={date.toString()}>
-									<input type="checkbox" onChange={handleChange} autoComplete="off"/>
-								</td>
-							);
-						})}
-						<td key="submit">
-							<button type="submit" onClick={() => updateAttendance()}>Submit</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+								return data[date.toString()] ? (
+									<Td key={date.toString()}>
+										<Center>
+											<Checkbox defaultChecked onChange={handleChange} colorScheme="blue"/>
+										</Center>
+									</Td>
+								) : (
+									<Td key={date.toString()}>
+										<Center>
+											<Checkbox onChange={handleChange} colorScheme="blue"/>
+										</Center>
+									</Td>
+								);
+							})}
+						</Tr>
+					</Tbody>
+				</Table>
+				<Button onClick={updateAttendance} colorScheme="blue" size="sm">Submit</Button>
+			</VStack>
 		</Layout>
 	);
 }

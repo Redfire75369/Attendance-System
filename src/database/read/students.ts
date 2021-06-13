@@ -13,7 +13,6 @@ async function studentById(student_id: string): Promise<Student | null> {
 		if (error || !data || !data[0]) {
 			throw error || new Error("No Data");
 		}
-
 		return data[0];
 	} catch (error) {
 		console.warn(error);
@@ -32,7 +31,6 @@ async function studentsAllByClassId(class_id: number): Promise<Student[]> {
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return data;
 	} catch (error) {
 		console.warn(error);
@@ -50,7 +48,6 @@ async function studentsAll(): Promise<Student[]> {
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return data;
 	} catch (error) {
 		console.warn(error);
@@ -60,7 +57,6 @@ async function studentsAll(): Promise<Student[]> {
 
 async function studentIdsAll(): Promise<string[]> {
 	let data = await studentsAll();
-
 	return data.map(({student_id}) => student_id);
 }
 

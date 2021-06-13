@@ -1,7 +1,7 @@
 import {Button, Center, HStack, Input, Text, VStack} from "@chakra-ui/react";
 import {Session, User} from "@supabase/supabase-js";
 import {useRouter} from "next/router";
-import React, {useState, useEffect, useRef} from "react";
+import React, {useEffect, useState} from "react";
 
 import Layout from "../components/Layout";
 import GoogleLogo from "../components/logos/Google";
@@ -16,35 +16,32 @@ function IndexPage() {
 	const [user, setUser] = useState<User | null>(null);
 	const setSession = useState<Session | null>(null)[1];
 
-	const studentRef = useRef<HTMLInputElement>(null);
-	const classRef = useRef<HTMLInputElement>(null);
+	const [studentId, setStudentId] = useState("");
+	const [classId, setClassId] = useState("");
 
 	useEffect(function () {
 		const authSession = anonSupabase.auth.session();
 		setSession(authSession);
 		setUser(authSession?.user ?? null);
 
-		const {data: authListener} = anonSupabase.auth.onAuthStateChange(
-			async function (event, authSession) {
-				console.log(`Supabase Auth Event: ${event}`);
+		const {data: authListener} = anonSupabase.auth.onAuthStateChange(async function (event, authSession) {
+			console.log(`Supabase Auth Event: ${event}`);
 
-				// This is what forwards the session to our auth API route which sets/deletes the cookie:
-				await fetch('/api/auth', {
-					method: "POST",
-					headers: new Headers({
-						"Content-Type": "application/json"
-					}),
-					credentials: "same-origin",
-					body: JSON.stringify({
-						event,
-						session: authSession
-					})
-				});
+			await fetch('/api/auth', {
+				method: "POST",
+				headers: new Headers({
+					"Content-Type": "application/json"
+				}),
+				credentials: "same-origin",
+				body: JSON.stringify({
+					event,
+					session: authSession
+				})
+			});
 
-				setSession(authSession)
-				setUser(authSession?.user ?? null);
-			}
-		)
+			setSession(authSession)
+			setUser(authSession?.user ?? null);
+		});
 
 		return function () {
 			authListener?.unsubscribe();
@@ -64,9 +61,8 @@ function IndexPage() {
 	}
 
 	async function goToStudent() {
-		const id = studentRef.current?.value;
-		if (id) {
-			await router.push(`/student/${id}`);
+		if (studentId !== "") {
+			await router.push(`/student/${studentId}`);
 		}
 	}
 	async function browseStudents() {
@@ -74,9 +70,8 @@ function IndexPage() {
 	}
 
 	async function goToClass() {
-		const id = classRef.current?.value;
-		if (id) {
-			await router.push(`/class/${id}`);
+		if (classId !== "") {
+			await router.push(`/class/${classId}`);
 		}
 	}
 	async function browseClasses() {
@@ -101,13 +96,13 @@ function IndexPage() {
 				<VStack justify="start" spacing={3}>
 					<HStack spacing={3}>
 						<Text>Student: </Text>
-						<Input ref={studentRef} resize="none" placeholder="Student ID" colorScheme="blue" size="sm"/>
+						<Input value={studentId} onChange={(event) => setStudentId(event.target.value)} resize="none" placeholder="Student ID" colorScheme="blue" size="sm"/>
 						<Button onClick={goToStudent} colorScheme="blue">Go to</Button>
 						<Button onClick={browseStudents} colorScheme="blue">Browse</Button>
 					</HStack>
 					<HStack spacing={3}>
 						<Text>Class: </Text>
-						<Input ref={classRef} resize="none" placeholder="Class ID" colorScheme="blue" size="sm"/>
+						<Input value={classId} onChange={(event) => setClassId(event.target.value)} resize="none" placeholder="Class ID" colorScheme="blue" size="sm"/>
 						<Button onClick={goToClass} colorScheme="blue">Go to</Button>
 						<Button onClick={browseClasses} colorScheme="blue">Browse</Button>
 					</HStack>

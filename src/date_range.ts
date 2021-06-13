@@ -1,21 +1,19 @@
-import {addDays, isValid, startOfDay, startOfToday, subWeeks} from "date-fns";
+import {addWeeks, isValid, startOfDay, startOfToday, subWeeks} from "date-fns";
 import {ParsedUrlQuery} from "querystring";
+import {Day, nextDay, prevDay} from "./day";
 
-function getDaysInRange(day: number, [start, end]: [Date, Date]): Date[] {
-	const first = startOfDay(start);
-	first.setUTCDate(start.getUTCDate() - start.getUTCDay() + day);
-
-	const last = startOfDay(end);
-	last.setUTCDate(end.getUTCDate() - end.getUTCDay() + day % 7);
+function getDaysInRange(day: Day, [start, end]: [Date, Date]): Date[] {
+	const first = nextDay(day, start);
+	const last = prevDay(day, end);
 
 	let dates: Date[] = [];
-	for (let date = first; date <= last; date = addDays(date, 7)) {
+	for (let date = first; date <= last; date = addWeeks(date, 1)) {
 		dates.push(date);
 	}
 	return dates;
 }
 
-function getDaysInYear(day: number, year: number): Date[] {
+function getDaysInYear(day: Day, year: number): Date[] {
 	return getDaysInRange(day, [new Date(`${year}-01-01`), new Date(`${year}-12-31`)]);
 }
 

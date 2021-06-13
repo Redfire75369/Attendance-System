@@ -1,9 +1,6 @@
-const redirectToHome = {
-	redirect: {
-		destination: "/",
-		permanent: false
-	}
-};
+import {assembleRedirect} from "./utils";
+
+const redirectToHome = assembleRedirect("/");
 
 export {
 	redirectToHome

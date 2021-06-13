@@ -14,7 +14,6 @@ async function classById(class_id: number): Promise<Class | null> {
 		if (error || !data || !data[0]) {
 			throw error || new Error("No Data");
 		}
-
 		return data[0];
 	} catch (error) {
 		console.warn(error);
@@ -22,13 +21,9 @@ async function classById(class_id: number): Promise<Class | null> {
 	}
 }
 
-async function classNameById(class_id: number): Promise<string | null> {
+async function classNameById(class_id: number): Promise<string> {
 	let data = await classById(class_id);
-	if (data == null) {
-		return "";
-	}
-
-	return data.class_name;
+	return data !== null ? data.class_name : "";
 }
 
 async function classesAll(): Promise<Class[]> {
@@ -41,7 +36,6 @@ async function classesAll(): Promise<Class[]> {
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return data;
 	} catch (error) {
 		console.warn(error);

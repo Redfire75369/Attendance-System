@@ -13,7 +13,6 @@ async function updateClass(class_id: number, name: string, level_id: number): Pr
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return true;
 	} catch (error) {
 		console.warn(error);

@@ -1,6 +1,7 @@
 import {Record} from "../../../interfaces";
 
 import supabase from "../../server";
+import {format} from "date-fns";
 
 async function record(record_id: number): Promise<Record | null> {
 	try {
@@ -26,14 +27,13 @@ async function recordId(date: Date, student_id: string): Promise<number | null> 
 		let {data, error} = await supabase
 			.from<Record>("attendance_record")
 			.select("record_id, date, student_id, attendance")
-			.eq("date", date.toISOString())
+			.eq("date", format(date, "yyyy-MM-dd"))
 			.eq("student_id", student_id)
 			.limit(1);
 
 		if (error || !data || !data[0]) {
 			throw error || new Error("No Data");
 		}
-
 		return data[0].record_id;
 	} catch (error) {
 		console.warn(error);
@@ -52,7 +52,6 @@ async function recordsAllByDate(date: number): Promise<Record[]> {
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return data;
 	} catch (error) {
 		console.warn(error);
@@ -71,7 +70,6 @@ async function recordsAllByStudent(student_id: string): Promise<Record[]> {
 		if (error || !data) {
 			throw error || new Error("No Data");
 		}
-
 		return data;
 	} catch (error) {
 		console.warn(error);

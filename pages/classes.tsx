@@ -1,6 +1,7 @@
-import {Button, HStack, Table, Tbody, Td, Th, Thead, Tr, VStack} from "@chakra-ui/react";
+import {Button, HStack, Input, Table, Tbody, Td, Th, Thead, Tr, VStack} from "@chakra-ui/react";
 import {GetServerSideProps, InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
+import {useState} from "react";
 
 import {Class} from "../interfaces";
 
@@ -10,6 +11,7 @@ import {redirectToHome} from "../src/constants";
 import {classesAll} from "../src/database/read/classes";
 import {studentsAllByClassId} from "../src/database/read/students";
 import supabase from "../src/server";
+import {parseBrowserQuery} from "../src/utils";
 
 const PAGE_LENGTH = 20;
 
@@ -20,38 +22,47 @@ export const getServerSideProps: GetServerSideProps = async function({query, req
 		return redirectToHome;
 	}
 
-	const page = !isNaN(parseInt(query.page as string)) ? parseInt(query.page as string) : 1
+	const {page, search} = parseBrowserQuery(query);
+	const lowerCaseSearch = search.toLowerCase();
 
 	const allClasses = await classesAll();
-
-	const classes = allClasses.splice((page - 1) * PAGE_LENGTH, page * PAGE_LENGTH);
+	const filteredClasses = allClasses.filter(function(class_) {
+		return search === "" || class_.class_id.toString().toLowerCase().includes(lowerCaseSearch) || class_.class_name.toLowerCase().includes(lowerCaseSearch);
+	});
+	const classes = filteredClasses.splice((page - 1) * PAGE_LENGTH, page * PAGE_LENGTH);
 	const students = await Promise.all(classes.map(async function(class_) {
 		return (await studentsAllByClassId(class_.class_id)).length;
 	}));
 
-	const maxPages = Math.ceil(allClasses.length / 50) + 1;
+	const maxPages = Math.ceil(filteredClasses.length / 50) + 1;
 
 	return {
 		props: {
 			classes,
 			maxPages,
 			page,
+			search,
 			students
 		}
-	}
+	};
 }
 
 function ClassesPage(
-	{classes, maxPages, page, students}: InferGetServerSidePropsType<typeof getServerSideProps>
+	{classes, maxPages, page, search, students}: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
 	const router = useRouter();
+	const [query, setQuery] = useState(search);
 
 	async function prevPage() {
-		await router.push(`/classes?page=${page - 1}`)
+		await router.push(`/classes?page=${page - 1}&q=${query}`)
 	}
 
 	async function nextPage() {
-		await router.push(`/classes?page=${page + 1}`)
+		await router.push(`/classes?page=${page + 1}&q=${query}`)
+	}
+
+	async function handleSearch() {
+		await router.push(`/classes?page=1&q=${query}`);
 	}
 
 	return (
@@ -60,6 +71,10 @@ function ClassesPage(
 				<HStack justify="start">
 					{page != 1 ? <Button onClick={prevPage} colorScheme="cyan" size="sm">Previous Page</Button> : <></>}
 					{page != maxPages ? <Button onClick={nextPage} colorScheme="cyan" size="sm">Next Page</Button> : <></>}
+				</HStack>
+				<HStack>
+					<Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" colorScheme="blue" size="sm"/>
+					<Button onClick={handleSearch} colorScheme="blue">Search</Button>
 				</HStack>
 				<HStack justify="start">
 					<Table colorScheme="blue" size="sm">
@@ -97,37 +112,6 @@ function ClassesPage(
 					{page != maxPages ? <Button onClick={nextPage} colorScheme="cyan" size="sm">Next Page</Button> : <></>}
 				</HStack>
 			</VStack>
-		</Layout>
-	);
-
-	return (
-		<Layout>
-			<table>
-				<tbody>
-				{(classes as Class[]).map(function (class_) {
-					async function goTo() {
-						await router.push(`/class/${class_.class_id}`);
-					}
-
-					return (
-						<tr key={class_.class_id}>
-							<td>{class_.class_id}</td>
-							<td>{class_.class_name}</td>
-							<td>{class_.level_id}</td>
-							<td>
-								<button onClick={goTo}>
-									Go to Class
-								</button>
-							</td>
-						</tr>
-					);
-				})}
-				</tbody>
-			</table>
-			<div>
-				{page != 1 ? <button onClick={prevPage}>Previous Page</button> : <></>}
-				{page != maxPages ? <button onClick={nextPage}>Next Page</button> : <></>}
-			</div>
 		</Layout>
 	);
 }

@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {Button, Center, HStack, Input, Text, VStack} from "@chakra-ui/react";
 import {Session, User} from "@supabase/supabase-js";
 import {useRouter} from "next/router";
@@ -9,8 +15,9 @@ import GoogleLogo from "../components/logos/Google";
 import anonSupabase from "../src/client";
 
 import "tachyons/css/tachyons.min.css";
+import Header from "../components/Header";
 
-function IndexPage() {
+function Index() {
 	const router = useRouter();
 
 	const [user, setUser] = useState<User | null>(null);
@@ -22,7 +29,7 @@ function IndexPage() {
 	const [invalidStudentId, setInvalidStudentId] = useState(false);
 	const [invalidClassId, setInvalidClassId] = useState(false);
 
-	useEffect(function () {
+	useEffect(function() {
 		const authSession = anonSupabase.auth.session();
 		setSession(authSession);
 		setUser(authSession?.user ?? null);
@@ -30,7 +37,7 @@ function IndexPage() {
 		const {data: authListener} = anonSupabase.auth.onAuthStateChange(async function (event, authSession) {
 			console.log(`Supabase Auth Event: ${event}`);
 
-			await fetch('/api/auth', {
+			await fetch("/api/auth", {
 				method: "POST",
 				headers: new Headers({
 					"Content-Type": "application/json"
@@ -55,12 +62,6 @@ function IndexPage() {
 		await anonSupabase.auth.signIn({
 			provider: "google"
 		});
-	}
-
-	async function signOut() {
-		await anonSupabase.auth.signOut();
-		setSession(null);
-		setUser(null);
 	}
 
 	async function goToStudent() {
@@ -107,10 +108,7 @@ function IndexPage() {
 	) : (
 		<Layout title="Attendance System">
 			<VStack h="100vh" justify="start">
-				<HStack w="100vw" justify="end" spacing={4} isInline>
-					<Text>{user.email?.split("@")[0]}</Text>
-					<Button onClick={signOut} colorScheme="blue">Sign Out</Button>
-				</HStack>
+				<Header user={{...user, permissions: {admin: false}}}/>
 				<VStack w="100vw" justify="start" spacing={3}>
 					<HStack spacing={3} isInline>
 						<Text>Student: </Text>
@@ -138,4 +136,4 @@ function IndexPage() {
 	);
 }
 
-export default IndexPage;
+export default Index;

@@ -1,9 +1,15 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {Button, Center, Checkbox, HStack, Input, Table, Tbody, Td, Text, Thead, Tr, VStack} from "@chakra-ui/react";
-import {GetServerSideProps, InferGetServerSidePropsType} from "next";
+import {GetServerSideProps} from "next";
 import {useRouter} from "next/router";
 import React, {ChangeEvent, useRef, useState} from "react";
 
-import {Attendance} from "../../interfaces";
+import {Attendance, AttendanceUser, Student} from "../../src/interfaces";
 
 import Layout from "../../components/Layout";
 import DatesHeader from "../../components/DatesHeader";
@@ -14,12 +20,19 @@ import {studentById} from "../../src/database/read/students";
 import {classNameById} from "../../src/database/read/classes";
 import {getISODate} from "../../src/date";
 import {getDaysInRange, parseDateRangeInQuery} from "../../src/date_range";
-import supabase from "../../src/server";
 import {assembleRedirect} from "../../src/utils";
+import getUser from "../../src/auth";
+import Header from "../../components/Header";
+
+type Props = {
+	attendance: Attendance,
+	className: string,
+	student: Student,
+	user: AttendanceUser
+};
 
 export const getServerSideProps: GetServerSideProps = async function({params, query, req}) {
-	const { user } = await supabase.auth.api.getUserByCookie(req);
-
+	const user = await getUser(req);
 	if (!user) {
 		return redirectToHome;
 	}
@@ -40,14 +53,13 @@ export const getServerSideProps: GetServerSideProps = async function({params, qu
 		props: {
 			attendance,
 			className,
-			student
+			student,
+			user
 		}
 	};
 }
 
-function StudentAttendancePage(
-	{attendance, className, student}: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+function StudentAttendance({attendance, className, student, user}: Props) {
 	const dates = Object.keys(attendance).map(d => new Date(d));
 	const present = dates.reduce(function(prev, date) {
 		return prev + (attendance[date.toString()] ? 1 : 0);
@@ -83,6 +95,7 @@ function StudentAttendancePage(
 	return (
 		<Layout title={`Student Attendance (${student.student_id})`}>
 			<VStack align="center" justify="start">
+				<Header user={user}/>
 				<HStack justify="center" spacing={3}>
 					<Text>From:</Text>
 					<Input type="date" ref={startRef} defaultValue={getISODate(dates[0])} size="sm"/>
@@ -136,4 +149,4 @@ function StudentAttendancePage(
 	);
 }
 
-export default StudentAttendancePage;
+export default StudentAttendance;

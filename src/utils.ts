@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {ParsedUrlQuery} from "querystring";
 
 function assembleRedirect(path: string, permanent: boolean = false) {
@@ -16,7 +22,12 @@ function parseBrowserQuery(query: ParsedUrlQuery) {
 	};
 }
 
+function isValidId(id: number | undefined) {
+	return id !== undefined && id >= 0 && !isNaN(id);
+}
+
 export {
 	assembleRedirect,
+	isValidId,
 	parseBrowserQuery
 };

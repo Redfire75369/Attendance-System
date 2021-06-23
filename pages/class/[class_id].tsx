@@ -1,9 +1,15 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {Button, Center, Checkbox, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
-import {GetServerSideProps, InferGetServerSidePropsType} from "next";
+import {GetServerSideProps} from "next";
 import {useRouter} from "next/router";
 import React, {ChangeEvent, useRef, useState} from "react";
 
-import {Attendance} from "../../interfaces";
+import {Attendance, Class, Student} from "../../src/interfaces";
 
 import DatesHeader from "../../components/DatesHeader";
 import Layout from "../../components/Layout";
@@ -14,12 +20,17 @@ import {classById} from "../../src/database/read/classes";
 import {studentsAllByClassId} from "../../src/database/read/students";
 import {getISODate} from "../../src/date";
 import {getDaysInRange, parseDateRangeInQuery} from "../../src/date_range";
-import supabase from "../../src/server";
 import {assembleRedirect} from "../../src/utils";
+import getUser from "../../src/auth";
+
+type Props = {
+	attendances: Attendance[],
+	class_: Class,
+	students: Student[]
+};
 
 export const getServerSideProps: GetServerSideProps = async function({params, query, req}) {
-	const {user} = await supabase.auth.api.getUserByCookie(req);
-
+	const user = await getUser(req);
 	if (!user) {
 		return redirectToHome;
 	}
@@ -47,13 +58,11 @@ export const getServerSideProps: GetServerSideProps = async function({params, qu
 	}
 }
 
-function ClassAttendancePage(
-	{attendances, class_, students}: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+function ClassAttendance({attendances, class_, students}: Props) {
 	const dates = Object.keys(attendances[0]).map(d => new Date(d));
 
 	const router = useRouter();
-	const [data, setData] = useState<Attendance[]>(attendances);
+	const [data, setData] = useState(attendances);
 
 	const modifications = useRef<{[key: string]: Attendance}>({});
 	const startRef = useRef<HTMLInputElement>(null);
@@ -148,4 +157,4 @@ function ClassAttendancePage(
 	);
 }
 
-export default ClassAttendancePage;
+export default ClassAttendance;

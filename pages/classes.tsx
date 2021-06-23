@@ -1,23 +1,38 @@
-import {Button, Center, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
-import {GetServerSideProps, InferGetServerSidePropsType} from "next";
-import {useRouter} from "next/router";
-import {useState} from "react";
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
-import {Class} from "../interfaces";
+import {Button, Center, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
+import {GetServerSideProps} from "next";
+import {useRouter} from "next/router";
+import React, {useState} from "react";
+
+import {AttendanceUser, Class} from "../src/interfaces";
 
 import Layout from "../components/Layout";
 
 import {redirectToHome} from "../src/constants";
 import {classesAll} from "../src/database/read/classes";
 import {studentsAllByClassId} from "../src/database/read/students";
-import supabase from "../src/server";
 import {parseBrowserQuery} from "../src/utils";
+import Header from "../components/Header";
+import getUser from "../src/auth";
 
 const PAGE_LENGTH = 20;
 
-export const getServerSideProps: GetServerSideProps = async function({query, req}) {
-	const {user} = await supabase.auth.api.getUserByCookie(req);
+type Props = {
+	classes: Class[],
+	maxPages: number,
+	page: number,
+	search: string,
+	students: number[],
+	user: AttendanceUser
+};
 
+export const getServerSideProps: GetServerSideProps = async function({query, req}) {
+	const user = await getUser(req);
 	if (!user) {
 		return redirectToHome;
 	}
@@ -42,14 +57,13 @@ export const getServerSideProps: GetServerSideProps = async function({query, req
 			maxPages,
 			page,
 			search,
-			students
+			students,
+			user
 		}
 	};
 }
 
-function ClassesPage(
-	{classes, maxPages, page, search, students}: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+function Classes({classes, maxPages, page, search, students, user}: Props) {
 	const router = useRouter();
 	const [query, setQuery] = useState(search);
 
@@ -68,6 +82,7 @@ function ClassesPage(
 	return classes.length === 0 ? (
 		<Layout title="Attendance System (Classes)">
 			<VStack justify="start">
+				<Header user={user}/>
 				<HStack>
 					<Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" colorScheme="blue" size="sm"/>
 					<Button onClick={handleSearch} colorScheme="blue">Search</Button>
@@ -100,7 +115,7 @@ function ClassesPage(
 							</Tr>
 						</Thead>
 						<Tbody>
-							{(classes as Class[]).map(function (class_, index) {
+							{classes.map(function (class_, index) {
 								async function goTo() {
 									await router.push(`/class/${class_.class_id}`);
 								}
@@ -128,4 +143,4 @@ function ClassesPage(
 	);
 }
 
-export default ClassesPage;
+export default Classes;

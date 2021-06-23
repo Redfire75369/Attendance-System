@@ -13,9 +13,6 @@ const withConfig = nextRuntimeDotenv({
 })
 
 module.exports = withConfig({
-	future: {
-		webpack5: true
-	},
 	sassOptions: {
 		includePaths: [
 			path.join(__dirname, "stylesheets")

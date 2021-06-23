@@ -5,11 +5,18 @@
  */
 
 import {NextApiRequest, NextApiResponse} from "next";
-
-import supabase from "../../src/server";
+import getUser from "../../../src/auth";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-	supabase.auth.api.setAuthCookie(req, res);
+	const user = await getUser(req);
+
+	if (!user) {
+		res.status(401).end();
+		return;
+	}
+
+	res.setHeader("Content-Type", "application/json");
+	res.status(200).json(JSON.stringify(user.permissions));;
 }
 
 export default handler;

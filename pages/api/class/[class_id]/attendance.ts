@@ -1,6 +1,12 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {NextApiRequest, NextApiResponse} from "next";
 
-import {updateStudentOnDates} from "../../../../src/database/update/attendance";
+import {upsertStudentOnDates} from "../../../../src/database/upsert/attendance";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== "PUT") {
@@ -14,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 		return;
 	}
 
-	// let user = supabase.auth.api.getUserByCookie(req);
+	// let user = await getUser(req);
 
 	const students = Object.keys(req.body);
 
@@ -29,7 +35,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 			attendances.push(req.body[student][date]);
 		}
 
-		await updateStudentOnDates(student, dates, attendances);
+		await upsertStudentOnDates(student, dates, attendances);
 	}
 
 	res.status(200).end();

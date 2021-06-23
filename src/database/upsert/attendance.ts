@@ -1,9 +1,15 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 import {studentsAllByClassId} from "../read/students";
 import {recordId} from "../read/records";
 import supabase from "../../server";
 import {format} from "date-fns";
 
-async function updateStudentOnDate(student_id: string, date: Date, attendance: boolean): Promise<boolean> {
+async function upsertStudentOnDate(student_id: string, date: Date, attendance: boolean): Promise<boolean> {
 	try {
 		let record_id = await recordId(date, student_id);
 
@@ -13,12 +19,18 @@ async function updateStudentOnDate(student_id: string, date: Date, attendance: b
 				date: format(date, "yyyy-MM-dd"),
 				student_id,
 				attendance
+			}, {
+				returning: "minimal",
+				count: null
 			})
 			.eq("record_id", record_id) : await supabase.from("attendance_record")
 			.insert({
 				date: format(date, "yyyy-MM-dd"),
 				student_id,
 				attendance
+			}, {
+				returning: "minimal",
+					count: null
 			});
 
 		if (error || !data) {
@@ -31,12 +43,12 @@ async function updateStudentOnDate(student_id: string, date: Date, attendance: b
 	}
 }
 
-async function updateStudentOnDates(student_id: string, dates: Date[], attendances: boolean[]): Promise<boolean> {
+async function upsertStudentOnDates(student_id: string, dates: Date[], attendances: boolean[]): Promise<boolean> {
 	if (dates.length == attendances.length) {
 		let success = true;
 		for (const date of dates) {
 			const index = dates.indexOf(date);
-			success = success && await updateStudentOnDate(student_id, date, attendances[index]);
+			success = success && await upsertStudentOnDate(student_id, date, attendances[index]);
 			if (!success) {
 				return false;
 			}
@@ -46,12 +58,12 @@ async function updateStudentOnDates(student_id: string, dates: Date[], attendanc
 	return false;
 }
 
-async function updateStudentsOnDate(student_ids: string[], date: Date, attendances: boolean[]): Promise<boolean> {
+async function upsertStudentsOnDate(student_ids: string[], date: Date, attendances: boolean[]): Promise<boolean> {
 	if (student_ids.length === attendances.length) {
 		let success = true;
 		for (const student_id of student_ids) {
 			const index = student_ids.indexOf(student_id);
-			success = success && await updateStudentOnDate(student_id, date, attendances[index]);
+			success = success && await upsertStudentOnDate(student_id, date, attendances[index]);
 			if (!success) {
 				return false;
 			}
@@ -61,12 +73,12 @@ async function updateStudentsOnDate(student_ids: string[], date: Date, attendanc
 	return false;
 }
 
-async function updateStudentsOnDates(student_ids: string[], dates: Date[][], attendances: boolean[][]) {
+async function upsertStudentsOnDates(student_ids: string[], dates: Date[][], attendances: boolean[][]) {
 	if (student_ids.length === dates.length && dates.length === attendances.length) {
 		let success = true;
 		for (const student_id of student_ids) {
 			const index = student_ids.indexOf(student_id);
-			success = success && await updateStudentOnDates(student_id, dates[index], attendances[index]);
+			success = success && await upsertStudentOnDates(student_id, dates[index], attendances[index]);
 			if (!success) {
 				return false;
 			}
@@ -76,20 +88,20 @@ async function updateStudentsOnDates(student_ids: string[], dates: Date[][], att
 	return false;
 }
 
-async function updateClassOnDate(class_id: number, date: Date, attendances: boolean[]): Promise<boolean> {
+async function upsertClassOnDate(class_id: number, date: Date, attendances: boolean[]): Promise<boolean> {
 	let students = await studentsAllByClassId(class_id);
 	if (!students) {
 		return false;
 	}
-	return updateStudentsOnDate(students.map(({student_id}) => student_id), date, attendances);
+	return upsertStudentsOnDate(students.map(({student_id}) => student_id), date, attendances);
 }
 
-async function updateClassOnDates(class_id: number, dates: Date[], attendances: boolean[][]): Promise<boolean> {
+async function upsertClassOnDates(class_id: number, dates: Date[], attendances: boolean[][]): Promise<boolean> {
 	if (dates.length === attendances.length) {
 		let success = true;
 		for (const date of dates) {
 			const index = dates.indexOf(date);
-			success = success && await updateClassOnDate(class_id, dates[index], attendances[index]);
+			success = success && await upsertClassOnDate(class_id, dates[index], attendances[index]);
 			if (!success) {
 				return false;
 			}
@@ -100,10 +112,10 @@ async function updateClassOnDates(class_id: number, dates: Date[], attendances: 
 }
 
 export {
-	updateClassOnDate,
-	updateClassOnDates,
-	updateStudentOnDate,
-	updateStudentOnDates,
-	updateStudentsOnDate,
-	updateStudentsOnDates
+	upsertClassOnDate,
+	upsertClassOnDates,
+	upsertStudentOnDate,
+	upsertStudentOnDates,
+	upsertStudentsOnDate,
+	upsertStudentsOnDates
 };

@@ -1,22 +1,36 @@
-import {Button, Center, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
-import {GetServerSideProps, InferGetServerSidePropsType} from "next";
-import {useRouter} from "next/router";
-import {useState} from "react";
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
-import {Student} from "../interfaces";
+import {Button, Center, HStack, Input, Table, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
+import {GetServerSideProps} from "next";
+import {useRouter} from "next/router";
+import React, {useState} from "react";
+
+import {AttendanceUser, StudentWithClassName} from "../src/interfaces";
 
 import Layout from "../components/Layout";
 
 import {redirectToHome} from "../src/constants";
-import {classNameById} from "../src/database/read/classes";
-import {studentsAll} from "../src/database/read/students";
-import supabase from "../src/server";
+import {studentsWithClassNamesAll} from "../src/database/read/students";
 import {parseBrowserQuery} from "../src/utils";
+import getUser from "../src/auth";
+import Header from "../components/Header";
 
 const PAGE_LENGTH = 50;
 
+type Props = {
+	maxPages: number,
+	page: number,
+	search: string,
+	students: StudentWithClassName[],
+	user: AttendanceUser
+};
+
 export const getServerSideProps: GetServerSideProps = async function({query, req}) {
-	const {user} = await supabase.auth.api.getUserByCookie(req);
+	const user = await getUser(req);
 	if (!user) {
 		return redirectToHome;
 	}
@@ -24,42 +38,27 @@ export const getServerSideProps: GetServerSideProps = async function({query, req
 	const {page, search} = parseBrowserQuery(query);
 	const lowerCaseSearch = search.toLowerCase();
 
-	const allStudents = await studentsAll();
-	const allClassNames = await Promise.all(allStudents.map(async function(student) {
-		return await classNameById(student.class_id);
-	}));
-	const classNames = [...allClassNames];
-	const indexes: number[] = [];
+	const allStudents = await studentsWithClassNamesAll();
 
-	const filteredStudents = allStudents.filter(function(student, index) {
-		const filtered = lowerCaseSearch === "" || student.student_id.toLowerCase().includes(lowerCaseSearch) || student.student_name.toLowerCase().includes(lowerCaseSearch) || allClassNames[index].toLowerCase().includes(lowerCaseSearch);
-		if (!filtered) {
-			indexes.push(index);
-		}
-		return filtered;
+	const filteredStudents = allStudents.filter(function(student) {
+		return lowerCaseSearch === "" || student.student_id.toLowerCase().includes(lowerCaseSearch) || student.student_name.toLowerCase().includes(lowerCaseSearch) || student.class.class_name.toLowerCase().includes(lowerCaseSearch);
 	});
 	const students = filteredStudents.splice((page - 1) * PAGE_LENGTH, page * PAGE_LENGTH);
-
-	indexes.reverse().forEach(function(index) {
-		classNames.splice(index, 1);
-	});
 
 	const maxPages = Math.ceil(filteredStudents.length / 50) + 1;
 
 	return {
 		props: {
-			classNames,
 			maxPages,
 			page,
 			search,
-			students
+			students,
+			user
 		}
 	};
 }
 
-function StudentsPage(
-	{classNames, maxPages, page, search, students}: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+function Students({maxPages, page, search, students, user}: Props) {
 	const router = useRouter();
 	const [query, setQuery] = useState(search);
 
@@ -78,6 +77,7 @@ function StudentsPage(
 	return students.length === 0 ? (
 		<Layout title="Attendance System (Students)">
 			<VStack justify="start">
+				<Header user={user}/>
 				<HStack>
 					<Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" colorScheme="blue" size="sm"/>
 					<Button onClick={handleSearch} colorScheme="blue">Search</Button>
@@ -90,6 +90,7 @@ function StudentsPage(
 	) : (
 		<Layout title="Attendance System (Students)">
 			<VStack justify="start">
+				<Header user={user}/>
 				<HStack justify="start">
 					{page != 1 ? <Button onClick={prevPage} colorScheme="cyan" size="sm">Previous Page</Button> : <></>}
 					{page != maxPages ? <Button onClick={nextPage} colorScheme="cyan" size="sm">Next Page</Button> : <></>}
@@ -109,7 +110,7 @@ function StudentsPage(
 							</Tr>
 						</Thead>
 						<Tbody>
-							{(students as Student[]).map(function(student, index) {
+							{students.map(function(student) {
 								async function goTo() {
 									await router.push(`/student/${student.student_id}`);
 								}
@@ -118,7 +119,7 @@ function StudentsPage(
 									<Tr key={student.student_id}>
 										<Td>{student.student_id}</Td>
 										<Td>{student.student_name}</Td>
-										<Td>{classNames[index]}</Td>
+										<Td>{student.class.class_name}</Td>
 										<Td><Button onClick={goTo} colorScheme="blue" size="sm">Go to Student</Button></Td>
 									</Tr>
 								);
@@ -135,4 +136,4 @@ function StudentsPage(
 	);
 }
 
-export default StudentsPage;
+export default Students;

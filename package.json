@@ -24,11 +24,11 @@
     "tachyons": "4.12.0"
   },
   "devDependencies": {
-    "@types/node": "15.12.2",
-    "@types/react": "17.0.11",
-    "@types/react-dom": "17.0.7",
-    "sass": "1.34.1",
+    "@types/node": "15.14.9",
+    "@types/react": "17.0.62",
+    "@types/react-dom": "17.0.20",
+    "sass": "1.63.6",
     "ts-loader": "^9.2.3",
-    "typescript": "4.3.2"
+    "typescript": "4.9.5"
   }
 }
